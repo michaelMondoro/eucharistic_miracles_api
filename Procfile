@@ -1,1 +1,1 @@
-web: gunicorn --preload bible_app:app
+web: gunicorn --preload miracles:app
