@@ -15,7 +15,6 @@ def getCountryMiracles(miracles):
             countries[miracle[2]].append({  'url':miracle[0], 
                                             'date':miracle[1],
                                             'city':miracle[3]})
-
     return countries
 
 def getSaintMiracles(miracles):
@@ -52,8 +51,16 @@ def index():
 def countries():
     con = sqlite3.connect('miracles.db')
     cur = con.cursor()
-    cur.execute('SELECT * FROM countryMiracles')
+    if request.args.get('country'):
+        country = request.args.get('country')
+        cur.execute(f'SELECT * FROM countryMiracles WHERE country == (?)',(country,))
+    else:
+        cur.execute('SELECT * FROM countryMiracles')
+
     miracles = cur.fetchall()
+    if miracles == []:
+        return jsonify({"ERROR":"No valid results"}),400
+
     data = getCountryMiracles(miracles)
     return jsonify(data), 201
 
