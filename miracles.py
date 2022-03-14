@@ -1,3 +1,4 @@
+from calendar import c
 from itertools import count
 from flask import Flask, Response, request, jsonify
 import sqlite3
@@ -8,44 +9,73 @@ def getCountryMiracles(miracles):
     countries = {}
     for miracle in miracles:
         if miracle[2] not in countries:
-            countries[miracle[2]] = [{   'url':miracle[0], 
-                                        'date':miracle[1],
-                                        'city':miracle[3]}]
+            countries[miracle[2]] = {   "total": 1,
+                                        "miracles":[{'url':miracle[0], 
+                                                    'date':miracle[1],
+                                                    'city':miracle[3]
+                                                    }]
+                                    }                       
         else:
-            countries[miracle[2]].append({  'url':miracle[0], 
+            countries[miracle[2]]['total'] += 1
+            countries[miracle[2]]["miracles"].append({  'url':miracle[0], 
                                             'date':miracle[1],
                                             'city':miracle[3]})
+    countries['totalCountries'] = len(countries.keys())
+    countries['totalMiracles'] = len(miracles)
+
     return countries
 
 def getSaintMiracles(miracles):
-    data = []
+    data = {"miracles": []}
     for miracle in miracles:
-        data.append({   'url':miracle[0], 
-                        'saint':miracle[1],
-                        'date':miracle[2]})
+        data["miracles"].append({ 'url':miracle[0], 
+                                        'saint':miracle[1],
+                                        'date':miracle[2]})
+    data["totalSaintMiracles"] = len(miracles)
     return data
 
 def getMarianMiracles(miracles):
-    data = []
+    data = {"miracles": []}
     for miracle in miracles:
-        data.append({   'url':miracle[0], 
-                        'date':miracle[1],
-                        'country':miracle[2],
-                        'city':miracle[3],
-                        'name':miracle[4]})
+        data["miracles"].append({'url':miracle[0], 
+                                        'date':miracle[1],
+                                        'country':miracle[2],
+                                        'city':miracle[3],
+                                        'name':miracle[4]})
+    data['totalMarianMiracles'] = len(miracles)
     return data
 
 def getCommunionMiracles(miracles):
-    data = []
+    data = {"miracles": []}
     for miracle in miracles:
-        data.append({   'url':miracle[0], 
-                        'name':miracle[1]})
+        data["miracles"].append({ 'url':miracle[0], 
+                                            'name':miracle[1]})
+
+    data['totalCommunionMiracles'] = len(miracles)
     return data
 
 
 @app.route('/', methods=["GET"])
 def index():
     return "WELCOME"
+
+@app.route('/all', methods=["GET"])
+def all():
+    con = sqlite3.connect('miracles.db')
+    cur = con.cursor()
+    data = {}
+
+    countries = cur.execute('SELECT * FROM countryMiracles').fetchall()
+    marian = cur.execute('SELECT * FROM marianMiracles').fetchall()
+    communions = cur.execute('SELECT * FROM communionMiracles').fetchall()
+    saints = cur.execute('SELECT * FROM saintMiracles').fetchall()
+
+    data["Country Miracles"] = getCountryMiracles(countries)
+    data["Marian Miracles"] = getMarianMiracles(marian)
+    data["Saint Miracles"] = getSaintMiracles(saints)
+    data["Communion Miracles"] = getCommunionMiracles(communions)
+
+    return jsonify(data),200
 
 @app.route('/countries', methods=["GET"])
 def countries():
@@ -59,7 +89,7 @@ def countries():
 
     miracles = cur.fetchall()
     if miracles == []:
-        return jsonify({"ERROR":"No valid results"}),400
+        return jsonify({"Uh-Oh":"No valid results"}),400
 
     data = getCountryMiracles(miracles)
     return jsonify(data), 201
