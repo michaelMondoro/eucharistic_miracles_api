@@ -1,16 +1,22 @@
+from itertools import count
 from flask import Flask, Response, request, jsonify
 import sqlite3
 
 app = Flask(__name__)
 
 def getCountryMiracles(miracles):
-    data = []
+    countries = {}
     for miracle in miracles:
-        data.append({   'url':miracle[0], 
-                        'date':miracle[1],
-                        'country':miracle[2],
-                        'city':miracle[3]})
-    return data
+        if miracle[2] not in countries:
+            countries[miracle[2]] = [{   'url':miracle[0], 
+                                        'date':miracle[1],
+                                        'city':miracle[3]}]
+        else:
+            countries[miracle[2]].append({  'url':miracle[0], 
+                                            'date':miracle[1],
+                                            'city':miracle[3]})
+
+    return countries
 
 def getSaintMiracles(miracles):
     data = []
