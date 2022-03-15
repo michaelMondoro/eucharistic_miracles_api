@@ -1,7 +1,9 @@
 from calendar import c
 from itertools import count
-from flask import Flask, Response, request, jsonify
+from flask import Flask, Response, render_template, request, jsonify, url_for
 import sqlite3
+
+from itsdangerous import json
 
 app = Flask(__name__)
 
@@ -57,7 +59,13 @@ def getCommunionMiracles(miracles):
 
 @app.route('/', methods=["GET"])
 def index():
-    return "WELCOME"
+    return jsonify({"welcome": {
+        "msg" : "Thanks for using the Eucharistic Miracles API!",
+        "exhibition": "http://www.miracolieucaristici.org",
+        "documentation": "https://rapidapi.com/teckneck1.1/api/eucharistic-miracles/",
+        "endpoints": ["/all", "/saints", "/countries", "/marian", "/communions"]
+        }
+    })
 
 @app.route('/all', methods=["GET"])
 def all():
