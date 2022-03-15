@@ -1,4 +1,5 @@
 from calendar import c
+from crypt import methods
 from itertools import count
 from flask import Flask, Response, render_template, request, jsonify, url_for
 import sqlite3
@@ -96,7 +97,7 @@ def countries():
 
     miracles = cur.fetchall()
     if miracles == []:
-        return jsonify({"Uh-Oh":"No valid results"}),400
+        return jsonify({"msg":"No valid results"}),400
 
     data = getCountryMiracles(miracles)
     return jsonify(data), 201
@@ -128,6 +129,10 @@ def communions():
     miracles = cur.fetchall()
     data = getCommunionMiracles(miracles)
     return jsonify(data), 201
+
+@app.errorhandler(404)
+def error(e):
+    return jsonify({"ERROR": 404})
 
 if __name__=='__main__':
     app.run(debug=True)
