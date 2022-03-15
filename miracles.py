@@ -3,7 +3,6 @@ from itertools import count
 from flask import Flask, Response, render_template, request, jsonify, url_for
 import sqlite3
 
-from itsdangerous import json
 
 app = Flask(__name__)
 
